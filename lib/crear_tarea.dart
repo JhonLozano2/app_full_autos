@@ -7,7 +7,7 @@ class CrearTarea extends StatefulWidget {
 
 class _CrearTareaState extends State<CrearTarea> {
 
-  // 🔥 Lista de servicios
+  //  Lista de servicios
   List<String> servicios = [
     "Cambio de aceite",
     "Diagnóstico electrónico",
