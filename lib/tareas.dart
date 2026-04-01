@@ -14,7 +14,7 @@ class _TareasState extends State<Tareas> {
     {
       "cliente": "Juan Pérez",
       "vehiculo": "Toyota Corolla 2020",
-      "servicio": "Cambio de acei te y filtros",
+      "servicio": "Cambio de aceite y filtros",
       "completado": false
     },
     {
@@ -92,7 +92,7 @@ class _TareasState extends State<Tareas> {
                   listaTareas.add(nuevaTarea);
                 });
 
-                guardarTareas(); // 🔥 guarda en memoria
+                guardarTareas(); // guarda en memoria
               }
             },
           )
