@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'crear_tarea.dart';
 
 class Tareas extends StatefulWidget {
   @override
@@ -23,7 +26,7 @@ class _TareasState extends State<Tareas> {
     {
       "cliente": "Pedro Martínez",
       "vehiculo": "Mazda 3 2021",
-      "servicio": "Diagnóstico electrónico",
+      "servicio": "Diagnóstico electronico",
       "completado": false
     },
     {
@@ -34,10 +37,35 @@ class _TareasState extends State<Tareas> {
     },
   ];
 
+  Future<void > guardarTareas() async {
+    final prefs = await SharedPreferences.getInstance();
+    String tareasJson = jsonEncode(listaTareas);
+    await prefs.setString('tareas', tareasJson);
+  }
+
+   Future<void> cargarTareas() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? tareasGuardadas = prefs.getString('tareas');
+
+    if (tareasGuardadas != null) {
+      setState(() {
+        listaTareas = List<Map<String, dynamic>>.from(
+          jsonDecode(tareasGuardadas),
+        );
+      });
+    }
+  }
+
+  void initState() {
+    super.initState();
+    cargarTareas();
+  }
+
   void marcarComoCompletado(int index) {
     setState(() {
       listaTareas[index]["completado"] = true;
     });
+    guardarTareas();
   }
 
   @override
@@ -48,6 +76,27 @@ class _TareasState extends State<Tareas> {
         backgroundColor: Color(0xFF2D6A4F),
         title: Text("Tareas"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () async {
+              final nuevaTarea = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CrearTarea(),
+                ),
+              );
+
+              if (nuevaTarea != null) {
+                setState(() {
+                  listaTareas.add(nuevaTarea);
+                });
+
+                guardarTareas(); // guarda en memoria
+              }
+            },
+          )
+        ],
       ),
       body: ListView.builder(
         padding: EdgeInsets.all(15),
