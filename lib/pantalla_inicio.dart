@@ -5,6 +5,7 @@ import 'agendar_cita.dart';
 import 'tecnicos.dart';
 import 'tareas.dart';
 import 'informacion_institucional.dart';
+import 'colaboradores.dart';
 
 class PantallaInicio extends StatelessWidget {
   const PantallaInicio({super.key});
@@ -62,7 +63,7 @@ class PantallaInicio extends StatelessWidget {
                   _BotonPequeno(
                     texto: "Técnicos",
                     icono: Icons.engineering,
-                    onTap: () => _navegar(context, TecnicosColaboradores()),
+                    onTap: () => _navegar(context, Colaboradores()),
                   ),
                   _BotonPequeno(
                     texto: "Tareas",

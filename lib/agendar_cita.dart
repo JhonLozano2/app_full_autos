@@ -12,6 +12,9 @@ class _AgendarCitaState extends State<AgendarCita> {
   DateTime? fechaSeleccionada;
   TimeOfDay? horaSeleccionada;
 
+  // 👉 Última cita (simulación sin base de datos)
+  String? ultimaCita;
+
   List<String> servicios = [
     "Cambio de aceite",
     "Diagnóstico electrónico",
@@ -53,6 +56,76 @@ class _AgendarCitaState extends State<AgendarCita> {
     }
   }
 
+  void confirmarCita() {
+    // 🔴 VALIDACIÓN
+    if (servicioSeleccionado == null ||
+        tecnicoSeleccionado == null ||
+        fechaSeleccionada == null ||
+        horaSeleccionada == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Por favor completa todos los campos")),
+      );
+      return;
+    }
+
+    // ✅ Guardar última cita (simulación)
+    setState(() {
+      ultimaCita =
+      "${servicioSeleccionado!} con ${tecnicoSeleccionado!} el ${fechaSeleccionada!.day}/${fechaSeleccionada!.month}/${fechaSeleccionada!.year} a las ${horaSeleccionada!.format(context)}";
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Cita confirmada correctamente")),
+    );
+  }
+
+  Widget resumenCita() {
+    if (servicioSeleccionado == null &&
+        tecnicoSeleccionado == null &&
+        fechaSeleccionada == null &&
+        horaSeleccionada == null) {
+      return SizedBox(); // no muestra nada si no hay datos
+    }
+
+    return Card(
+      margin: EdgeInsets.only(top: 20),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Resumen de la cita",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 10),
+            Text("Servicio: ${servicioSeleccionado ?? '-'}"),
+            Text("Técnico: ${tecnicoSeleccionado ?? '-'}"),
+            Text("Fecha: ${fechaSeleccionada != null ? "${fechaSeleccionada!.day}/${fechaSeleccionada!.month}/${fechaSeleccionada!.year}" : '-'}"),
+            Text("Hora: ${horaSeleccionada != null ? horaSeleccionada!.format(context) : '-'}"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget ultimaCitaWidget() {
+    if (ultimaCita == null) return SizedBox();
+
+    return Card(
+      color: Colors.green[50],
+      margin: EdgeInsets.only(top: 20),
+      child: Padding(
+        padding: EdgeInsets.all(15),
+        child: Text(
+          "Última cita agendada:\n$ultimaCita",
+          style: TextStyle(color: Colors.green[800]),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +140,7 @@ class _AgendarCitaState extends State<AgendarCita> {
         child: Column(
           children: [
 
-            // Dropdown Servicio
+            // 🔹 Servicio
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: "Selecciona un servicio",
@@ -89,7 +162,7 @@ class _AgendarCitaState extends State<AgendarCita> {
 
             SizedBox(height: 15),
 
-            // Dropdown Técnico
+            // 🔹 Técnico
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: "Selecciona un técnico",
@@ -111,7 +184,7 @@ class _AgendarCitaState extends State<AgendarCita> {
 
             SizedBox(height: 15),
 
-            // Fecha
+            // 🔹 Fecha
             ElevatedButton(
               onPressed: seleccionarFecha,
               child: Text(
@@ -127,7 +200,7 @@ class _AgendarCitaState extends State<AgendarCita> {
 
             SizedBox(height: 15),
 
-            // Hora
+            // 🔹 Hora
             ElevatedButton(
               onPressed: seleccionarHora,
               child: Text(
@@ -141,21 +214,23 @@ class _AgendarCitaState extends State<AgendarCita> {
               ),
             ),
 
-            SizedBox(height: 25),
+            // 🔹 RESUMEN
+            resumenCita(),
 
-            // Botón Confirmar
+            SizedBox(height: 20),
+
+            // 🔹 BOTÓN CONFIRMAR
             ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Cita confirmada correctamente")),
-                );
-              },
+              onPressed: confirmarCita,
               child: Text("Confirmar Cita"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF2D6A4F),
                 minimumSize: Size(double.infinity, 50),
               ),
             ),
+
+            // 🔹 ÚLTIMA CITA
+            ultimaCitaWidget(),
           ],
         ),
       ),

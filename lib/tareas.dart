@@ -10,68 +10,74 @@ class Tareas extends StatefulWidget {
 
 class _TareasState extends State<Tareas> {
 
-  List<Map<String, dynamic>> listaTareas = [
-    {
-      "cliente": "Juan Pérez",
-      "vehiculo": "Toyota Corolla 2020",
-      "servicio": "Cambio de aceite y filtros",
-      "completado": false
-    },
-    {
-      "cliente": "María García",
-      "vehiculo": "Chevrolet Spark 2019",
-      "servicio": "Revisión de frenos",
-      "completado": false
-    },
-    {
-      "cliente": "Pedro Martínez",
-      "vehiculo": "Mazda 3 2021",
-      "servicio": "Diagnóstico electronico",
-      "completado": false
-    },
-    {
-      "cliente": "Ana López",
-      "vehiculo": "Renault Logan 2018",
-      "servicio": "Alineación y balanceo",
-      "completado": false
-    },
-  ];
+  List<Map<String, dynamic>> listaTareas = [];
 
-  Future<void > guardarTareas() async {
-    final prefs = await SharedPreferences.getInstance();
-    String tareasJson = jsonEncode(listaTareas);
-    await prefs.setString('tareas', tareasJson);
-  }
-
-   Future<void> cargarTareas() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? tareasGuardadas = prefs.getString('tareas');
-
-    if (tareasGuardadas != null) {
-      setState(() {
-        listaTareas = List<Map<String, dynamic>>.from(
-          jsonDecode(tareasGuardadas),
-        );
-      });
-    }
-  }
-
+  @override
   void initState() {
     super.initState();
     cargarTareas();
   }
 
+  // 🟢 GUARDAR SOLO DATOS (SIN ESTADO)
+  Future<void> guardarTareas() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // eliminamos estado antes de guardar
+    List tareasSinEstado = listaTareas.map((t) {
+      return {
+        "cliente": t["cliente"],
+        "vehiculo": t["vehiculo"],
+        "servicio": t["servicio"],
+      };
+    }).toList();
+
+    await prefs.setString('tareas', jsonEncode(tareasSinEstado));
+  }
+
+  // 🟢 CARGAR Y REINICIAR ESTADO
+  Future<void> cargarTareas() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? tareasGuardadas = prefs.getString('tareas');
+
+    if (tareasGuardadas != null) {
+      List decoded = jsonDecode(tareasGuardadas);
+
+      setState(() {
+        listaTareas = decoded.map<Map<String, dynamic>>((t) {
+          return {
+            "cliente": t["cliente"],
+            "vehiculo": t["vehiculo"],
+            "servicio": t["servicio"],
+            "completado": false, // SIEMPRE inicia pendiente
+          };
+        }).toList();
+      });
+    } else {
+      // datos iniciales
+      listaTareas = [
+        {
+          "cliente": "Juan Pérez",
+          "vehiculo": "Toyota Corolla 2020",
+          "servicio": "Cambio de aceite y filtros",
+          "completado": false
+        },
+      ];
+    }
+  }
+
+  // 🟢 CAMBIAR ESTADO (NO SE GUARDA)
   void marcarComoCompletado(int index) {
     setState(() {
-      listaTareas[index]["completado"] = true;
+      listaTareas[index]["completado"] =
+      !listaTareas[index]["completado"];
     });
-    guardarTareas();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFF1F5F4),
+
       appBar: AppBar(
         backgroundColor: Color(0xFF2D6A4F),
         title: Text("Tareas"),
@@ -89,15 +95,17 @@ class _TareasState extends State<Tareas> {
 
               if (nuevaTarea != null) {
                 setState(() {
+                  nuevaTarea["completado"] = false;
                   listaTareas.add(nuevaTarea);
                 });
 
-                guardarTareas(); // guarda en memoria
+                guardarTareas(); // SOLO guarda datos
               }
             },
           )
         ],
       ),
+
       body: ListView.builder(
         padding: EdgeInsets.all(15),
         itemCount: listaTareas.length,
@@ -117,7 +125,6 @@ class _TareasState extends State<Tareas> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  // CLIENTE
                   Text(
                     listaTareas[index]["cliente"],
                     style: TextStyle(
@@ -128,53 +135,35 @@ class _TareasState extends State<Tareas> {
 
                   SizedBox(height: 6),
 
-                  // VEHÍCULO
-                  Text(
-                    "Vehículo: ${listaTareas[index]["vehiculo"]}",
-                  ),
-
-                  SizedBox(height: 4),
-
-                  // SERVICIO
-                  Text(
-                    "Servicio: ${listaTareas[index]["servicio"]}",
-                  ),
+                  Text("Vehículo: ${listaTareas[index]["vehiculo"]}"),
+                  Text("Servicio: ${listaTareas[index]["servicio"]}"),
 
                   SizedBox(height: 12),
 
-                  // ESTADO
                   Text(
                     "Estado: ${estaCompletado ? "Completado" : "Pendiente"}",
                     style: TextStyle(
-                      color:
-                      estaCompletado ? Colors.green : Colors.red,
+                      color: estaCompletado ? Colors.green : Colors.red,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
                   SizedBox(height: 10),
 
-                  // BOTÓN SEPARADO
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: estaCompletado
-                          ? null
-                          : () => marcarComoCompletado(index),
+                      onPressed: () => marcarComoCompletado(index),
                       icon: Icon(Icons.check),
                       label: Text(
                         estaCompletado
-                            ? "Completado"
+                            ? "Marcar como pendiente"
                             : "Marcar como completado",
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: estaCompletado
-                            ? Colors.green
+                            ? Colors.orange
                             : Color(0xFF40916C),
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
                       ),
                     ),
                   ),
